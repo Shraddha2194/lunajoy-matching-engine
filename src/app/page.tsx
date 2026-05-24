@@ -52,6 +52,7 @@ export default function Home() {
       });
       const data = await res.json();
       setResults(data.matches || []);
+console.log('API response:', data);
       setSubmitted(true);
     } catch (e) {
       setError('Something went wrong. Please try again.');
