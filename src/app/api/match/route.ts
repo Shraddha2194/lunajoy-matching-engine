@@ -18,22 +18,30 @@ export async function POST(request: Request) {
 
     const results = matchClinicians(preferences);
 
+    if (results.length === 0) {
+      return NextResponse.json({
+        success: true,
+        explanation: 'No clinicians found. Try adjusting your state or insurance provider.',
+      });
+    }
+
+    const top = results[0];
+    const clinician = top.clinician;
+
+    const explanation = `Your top match is ${clinician.name}, based in ${clinician.state} with a match score of ${top.score} points. Here is why they were recommended: ${top.matched_attributes.join(', ')}. They are ${top.availability ? 'currently available' : 'limited in availability'} and accept ${clinician.insurance.join(', ')} insurance. They specialise in ${clinician.specialties.join(', ')} and offer ${clinician.appointment_types.join(' and ')} appointments.`;
+
     return NextResponse.json({
       success: true,
-      total_matches: results.length,
-      matches: results,
+      top_match: clinician.name,
+      score: top.score,
+      explanation,
+      all_matches: results.length,
     });
+
   } catch (error) {
     return NextResponse.json(
       { success: false, error: 'Something went wrong' },
       { status: 500 }
     );
   }
-}
-
-export async function GET() {
-  return NextResponse.json({
-    message: 'LunaJoy Matching Engine is live',
-    usage: 'Send a POST request with patient preferences to receive ranked clinician matches',
-  });
 }
